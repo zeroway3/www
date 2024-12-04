@@ -1,7 +1,7 @@
 # 한남대학교 IPD(융합캡스톤디자인) WWW
 💬 Provide a new rainwater catchment product with reward and management features project
 
-새로운 빗물받이 제품을 제공하고 리워드 및 관리 기능을 제공하는 프로젝트
+새로운 빗물받이 제품을 소개하고 리워드 및 관리 기능을 제공하는 프로젝트
 
 WWW란 Watch Water Way에 줄임말로 물길을 지켜보다라는 뜻을 갖고 있습니다.
 
