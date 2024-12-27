@@ -1,3 +1,5 @@
+
+
 <template>
   <div id="product-carousel">
     <!-- 제품 영상 구간 -->
@@ -5,7 +7,7 @@
       <p class="section-title">제품 영상을 소개합니다.</p>
       <div class="video-ad">
         <video preload="metadata" autoplay muted loop playsinline>
-          <source src="@/assets/www.mp4" type="video/mp4" />
+          <source src="@/assets/productFinal.mp4" type="video/mp4" />
         </video>
       </div>
     </div>
@@ -47,7 +49,6 @@
 
     <!-- 선택된 이미지 텍스트 표시 -->
     <div v-if="selectedImageIndex !== null" class="image-details">
-      <img :src="productImages[selectedImageIndex].src" class="selected-image" />
       <p>{{ productImages[selectedImageIndex].text }}</p>
     </div>
   </div>
@@ -67,11 +68,10 @@ export default {
       activeIndex: 0,
       selectedImageIndex: null,
       productImages: [
-        { src: require('@/assets/wwwproduct.png'), text: "Product 1 description" },
-        { src: require('@/assets/wwwlogo.jpeg'), text: "Product 2 description" },
-        { src: require('@/assets/wwwlogo.jpeg'), text: "Product 3 description" },
-        { src: require('@/assets/wwwlogo.jpeg'), text: "Product 4 description" },
-        { src: require('@/assets/wwwlogo.jpeg'), text: "Product 5 description" },
+      { src: require('@/assets/feature1.png'), text: "제품에 나뭇잎이나 쓰레기가 들어가서       작동을 안할 때" },
+        { src: require('@/assets/feature2.png'), text: "제품 덮개가 비가 오지 않는데 내려가 있을 때" },
+        { src: require('@/assets/feature3.png'), text: "제품 덮개가 자리를 이탈했을 때 " },
+
       ]
     }
   },
@@ -123,10 +123,13 @@ body {
 
 /* 제품 이미지 스타일 */
 .product-image {
-  max-width: 80%;
+  max-width: 90%;
   max-height: 300px;
   margin: 0 auto;
   display: block;
+  border-radius: 5px;
+  margin-top: 25px;
+  margin-bottom: 25px;
   transition: transform 0.3s ease;
 }
 .swiper-slide-zoom.swiper-slide-active .product-image {
@@ -153,6 +156,7 @@ body {
 
 /* 선택된 이미지 텍스트 표시 스타일 */
 .image-details {
+  font-family: 'Jua', sans-serif;
   margin-top: 20px;
   padding: 20px;
   max-width: 90%;
@@ -181,3 +185,4 @@ body {
   }
 }
 </style>
+

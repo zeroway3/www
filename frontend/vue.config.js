@@ -1,16 +1,18 @@
-const { defineConfig } = require('@vue/cli-service')
+
+
+const { defineConfig } = require('@vue/cli-service');
 
 module.exports = defineConfig({
   transpileDependencies: true,
   pwa: {
-    name: 'WWW', // 앱 이름
-    themeColor: '#4DBA87', // 상단 바 색상
-    msTileColor: '#000000', // Windows 타일 색상
+    name: 'WWW',
+    themeColor: '#4DBA87',
+    msTileColor: '#000000',
     manifestOptions: {
-      short_name: 'www', // 줄임 이름
-      start_url: '.', // 시작 경로
-      display: 'standalone', // 앱처럼 표시
-      background_color: '#ffffff', // 시작 화면 배경색
+      short_name: 'www',
+      start_url: '.',
+      display: 'standalone',
+      background_color: '#ffffff',
     },
     iconPaths: {
       favicon32: 'img/icons/32www.jpg',
@@ -20,4 +22,24 @@ module.exports = defineConfig({
       msTileImage: 'img/icons/144www.jpg',
     },
   },
-})
+  devServer: {
+    proxy: {
+      // 기상청 API 프록시
+      '/api/weather': {
+        target: 'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0',
+        changeOrigin: true,
+        pathRewrite: { '^/api/weather': '' },
+        secure: false,
+        timeout: 10000,
+      },
+      // Spring Boot API 프록시
+      '/api': {
+        target: 'http://localhost:8081', // Spring Boot 서버 주소
+        changeOrigin: true,
+        pathRewrite: { '^/api': '' },
+        secure: false,
+      },
+    },
+  },
+});
+

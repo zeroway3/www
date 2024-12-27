@@ -1,3 +1,5 @@
+
+
 <template>
   <div class="page">
     <!-- 월별 적립금 현황 -->
@@ -77,7 +79,7 @@ export default {
   },
   data() {
     return {
-      selectedMonth: "2024-11", // 기본 선택된 월
+      selectedMonth: "2024-12", // 기본 선택된 월
     };
   },
   created() {
@@ -175,3 +177,4 @@ export default {
   margin-top: 5px;
 }
 </style>
+

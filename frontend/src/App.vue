@@ -1,3 +1,5 @@
+
+
 <template>
   <div class="app">
     <!-- 로그인 화면 -->
@@ -22,8 +24,8 @@
         <div class="side-menu" @click.stop>
           <div class="side-menu-content">
             <div class="profile-section">
-              <p class="username">김영식 님</p>
-              <button class="logout-button">로그아웃</button>
+              <p class="username">{{ userInfo.name || "사용자" }} 님</p>
+              <button class="logout-button" @click="logout">로그아웃</button>
             </div>
             <div class="menu-category">
               <h3>😊 MY</h3>
@@ -79,11 +81,12 @@
 </template>
 
 <script>
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { library } from '@fortawesome/fontawesome-svg-core';
-import { faHome, faBoxOpen, faGift, faUser } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { faHome, faBoxOpen, faGift, faUser, faHeart } from "@fortawesome/free-solid-svg-icons";
+import { mapState, mapActions } from "vuex";
 
-library.add(faHome, faBoxOpen, faGift, faUser);
+library.add(faHome, faBoxOpen, faGift, faUser, faHeart);
 
 export default {
   components: {
@@ -93,22 +96,55 @@ export default {
     return {
       isLoading: true, // 로딩 상태
       isFadingOut: false, // 페이드아웃 애니메이션 상태
-      isMenuOpen: false,
+      isMenuOpen: false, // 사이드 메뉴 상태
     };
   },
+  computed: {
+    // Vuex에서 userInfo 가져오기
+    ...mapState({
+      userInfo: (state) => state.userInfo,
+    }),
+  },
+  methods: {
+    // Vuex 액션 사용
+    ...mapActions(["fetchUserInfo"]),
+
+    // 토글 메뉴 열기/닫기
+    toggleMenu() {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        this.$router.push("/mainlogin");
+      } else {
+        this.fetchUserInfo(); // Vuex를 통해 사용자 정보 갱신
+        this.isMenuOpen = !this.isMenuOpen; // 메뉴 토글
+      }
+    },
+
+    // X 버튼을 눌렀을 때 메뉴 닫기
+    closeMenu() {
+      this.isMenuOpen = false; // 메뉴 상태를 false로 변경
+    },
+
+    // 로그아웃 기능
+    logout() {
+      localStorage.removeItem("token");
+      localStorage.removeItem("profileImage");
+      this.isMenuOpen = false; // 메뉴를 닫음
+      this.$router.push("/mainlogin");
+    },
+  },
   mounted() {
-    // 1.5초 후 페이드아웃 실행 후 메인 화면으로 전환
+    // 페이지 로드 시 사용자 정보 불러오기
+    this.fetchUserInfo();
+
+    // 페이드아웃 애니메이션 설정
     setTimeout(() => {
       this.isFadingOut = true;
       setTimeout(() => {
         this.isLoading = false;
-      }, 600); // 페이드아웃 애니메이션 지속 시간
+      }, 600);
     }, 1500);
-  },
-  methods: {
-    toggleMenu() {
-      this.isMenuOpen = !this.isMenuOpen;
-    },
   },
 };
 </script>
@@ -245,8 +281,8 @@ export default {
 
 .close-button {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 5px;
+  right: 5px;
   font-size: 24px;
   cursor: pointer;
   background: none;
@@ -302,3 +338,4 @@ export default {
   margin-bottom: 3px;
 }
 </style>
+

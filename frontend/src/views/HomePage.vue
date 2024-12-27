@@ -1,15 +1,44 @@
+
 <template>
   <div class="home-page">
     <div class="navigation-box">
+      <div class="profile-container">
+    <!-- 프로필 정보 -->
+    <div class="profile">
+      <label for="profile-input" class="profile-img-label">
+            <img class="profile-img" :src="userInfo.image" alt="프로필 사진" />
+          </label>
+          <input
+            id="profile-input"
+            type="file"
+            accept="image/*"
+            @change="changeProfileImage"
+            style="display: none;"
+          />
+      <div class="profile-details">
+        <h2 class="profile-name">{{ userInfo.name }} 님</h2>
+        <p class="profile-status">{{ userInfo.status }}</p>
+      </div>
+      <button class="shop-button" @click="goToShop">
+      Go
+      </button>
+    </div>
+  </div>
+
       <!-- 광고 슬라이드 -->
-      <div class="ad-slider"
-           @mousedown="onDragStart"
-           @mousemove="onDragMove"
-           @mouseup="onDragEnd"
-           @mouseleave="onDragEnd"
-           @touchstart="onTouchStart"
-           @touchmove="onTouchMove"
-           @touchend="onTouchEnd">
+      <div
+        class="ad-slider"
+        @mousedown="onDragStart"
+        @mousemove="onDragMove"
+        @mouseup="onDragEnd"
+        @mouseleave="onDragEnd"
+        @touchstart="onTouchStart"
+        @touchmove="onTouchMove"
+        @touchend="onTouchEnd"
+      >
+
+
+      
         <img :src="currentAd" alt="광고 이미지" class="ad-image" />
         <!-- 슬라이드 네비게이션 막대 -->
         <div class="pagination-bars">
@@ -22,8 +51,32 @@
         </div>
       </div>
 
+      <!-- 기상청 단기예보 -->
+      <div class="weather-box">
+        <div class="weather-info">
+          <div class="today-weather">
+            <p>{{ weather?.today || "정보 없음" }}</p>
+          </div>
+          <div class="rain-forecast">
+            <p>{{ weather?.rain || "3일 이내의 비/눈 예보가 없습니다." }}</p>
+          </div>
+          <div class="weather-alert">
+            <button class="alert-button" @click="toggleAlert">
+              <font-awesome-icon
+                :icon="alertEnabled ? 'bell' : 'bell-slash'"
+                :class="{ enabled: alertEnabled, disabled: !alertEnabled }"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- 네이버 지도 -->
-      <NaverMap :mapOptions="mapOptions" class="rounded-map" style="width: 100%; height: 400px;">
+      <NaverMap
+        :mapOptions="mapOptions"
+        class="rounded-map"
+        style="width: 100%; height: 400px"
+      >
         <template v-slot:default>
           <NaverMarker
             v-for="data in datas"
@@ -50,10 +103,24 @@
           <p>위치: {{ popupData.name }}</p>
           <p>위도: {{ popupData.lat }}</p>
           <p>경도: {{ popupData.lng }}</p>
-          <img :src="popupData.imageUrl" alt="마커 이미지" class="popup-image" />
+          <img
+            :src="popupData.imageUrl"
+            alt="마커 이미지"
+            class="popup-image"
+          />
           <div class="action-buttons">
-              <button class="action-button" @click="showReportOptions('기능 고장 신고')">제품 고장 신고</button>
-              <button class="action-button" @click="showReportOptions('청소 요청')">청소 요청</button>
+            <button
+              class="action-button"
+              @click="showReportOptions('기능 고장 신고')"
+            >
+              고장 신고
+            </button>
+            <button
+              class="action-button"
+              @click="showReportOptions('청소 요청')"
+            >
+              청소 요청
+            </button>
           </div>
         </div>
       </div>
@@ -62,14 +129,22 @@
 </template>
 
 <script>
-import { NaverMap, NaverMarker } from 'vue3-naver-maps';
-import Swal from 'sweetalert2';
-import { mapActions } from 'vuex';
+import { NaverMap, NaverMarker } from "vue3-naver-maps";
+import Swal from "sweetalert2";
+import { mapActions } from "vuex";
+import axios from "axios";
+import weatherAxios from "@/axiosWeather";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+
+library.add(faArrowRight);
 
 export default {
   components: {
     NaverMap,
     NaverMarker,
+    FontAwesomeIcon,
   },
   data() {
     return {
@@ -84,29 +159,150 @@ export default {
         daejeon: { lat: 36.3504, lng: 127.3845 },
       },
       datas: [
-        { id: 1, name: "한남대학교 종합운동장", lat: 36.3543, lng: 127.4190, imageUrl: require('@/assets/wwwlogo.jpeg') },
-        { id: 2, name: "한남대학교 메이커스스페이스", lat: 36.3541, lng: 127.4253, imageUrl: require('@/assets/wwwlogo.jpeg') },
-        { id: 3, name: "대전시청", lat: 36.3504, lng: 127.3845, imageUrl: require('@/assets/wwwlogo.jpeg') },
+        {
+          id: 1,
+          name: "한남대학교 종합운동장",
+          lat: 36.3543,
+          lng: 127.419,
+          imageUrl: require("@/assets/wwwlogo.jpeg"),
+        },
+        {
+          id: 2,
+          name: "한남대학교 메이커스스페이스",
+          lat: 36.3541,
+          lng: 127.4253,
+          imageUrl: require("@/assets/wwwlogo.jpeg"),
+        },
+        {
+          id: 3,
+          name: "대전시청",
+          lat: 36.3504,
+          lng: 127.3845,
+          imageUrl: require("@/assets/wwwlogo.jpeg"),
+        },
       ],
-      popupData: null,
-      adImages: [require('@/assets/adf1.jpeg'), require('@/assets/adf4.jpeg'),require('@/assets/adf3.jpeg')],
+      adImages: [
+        require("@/assets/adf3.jpeg"),
+        require("@/assets/adf4.jpeg"),
+        require("@/assets/adf1.jpeg"),
+      ],
       currentAdIndex: 0,
-      touchStartX: 0,
-      touchEndX: 0,
+      popupData: null,
+      weather: null,
+      alertEnabled: false,
       isDragging: false,
-      fileAttached: false, // 파일 첨부 상태
+      touchStartX: null,
+      touchEndX: null,
+      fileAttached: false,
+      userInfo: {
+        image: require("@/assets/prof.jpeg"),
+        name: "영식 님",
+        status: "적림금 사용하러 가보기",
+      },
     };
   },
   computed: {
     currentAd() {
       return this.adImages[this.currentAdIndex];
-    }
+    },
   },
   methods: {
-    ...mapActions(['addReport']),
+    ...mapActions(["addReport"]),
+    async fetchWeather() {
+      const serviceKey = "XEa7BTZ7ZMxqQCg482IIMtEZa6VrcnMM6GTmK26ZO8nThpY1v5Og70vIkgH4Ce%2B0AjZwa39omHBbOxj5I0jJLQ%3D%3D";
+
+      const baseDate = this.getCurrentDate();
+      const baseTime = "0500";
+      const nx = 68;
+      const ny = 100;
+
+      const url = `/api/weather/getVilageFcst?serviceKey=${serviceKey}&pageNo=1&numOfRows=100&dataType=JSON&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
+
+      
+      
+      try {
+        const response = await weatherAxios.get(url); // 기본 axios 사용
+        const items = response.data.response?.body?.items?.item || [];
+        const skyData = items.find((item) => item.category === "SKY");
+        const skyMap = { 1: "맑음 🌤️", 3: "구름 많음 ⛅", 4: "흐림 ☁️" };
+        const todayWeather = skyMap[skyData?.fcstValue] || "맑음 🌤️";
+
+        let rainForecast = null;
+        for (let day = 0; day < 3; day++) {
+          const targetDate = this.getFutureDate(day);
+          const rainData = items.filter(
+            (item) =>
+              item.category === "PTY" &&
+              Number(item.fcstValue) > 0 &&
+              item.fcstDate === targetDate
+          );
+
+          if (rainData.length > 0) {
+            rainForecast = `${
+              day === 0 ? "오늘" : `${day}일 뒤`
+            } 비/눈 예보가 있습니다.`;
+            break;
+          }
+        }
+
+        console.log("기상청 API 응답 데이터:", response.data);
+        this.weather = {
+          today: todayWeather,
+          rain: rainForecast || "3일 이내의 비/눈 예보가 없습니다.",
+        };
+      } catch (error) {
+        console.error("API 요청 실패: ", error);
+        this.weather = {
+          today: "구름 많음 ⛅",
+        };
+        console.error("API 요청 실패:", error.response ? error.response.data : error.message);
+      }
+    },
+    async fetchUserInfo() {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          alert("로그인이 필요합니다.");
+          this.$router.push("/login");
+          return;
+        }
+
+        const response = await axios.get("/api/users/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        // 가져온 사용자 정보 반영
+        this.userInfo.name = response.data.name || "사용자";
+        const savedImage = localStorage.getItem("profileImage"); // LocalStorage에서 저장된 이미지 가져오기
+        this.userInfo.image = savedImage || response.data.profileImage || this.userInfo.image;
+      } catch (error) {
+        console.error("사용자 정보 불러오기 실패:", error);
+        alert("사용자 정보를 불러오는 중 문제가 발생했습니다.");
+      }
+    },
+    getCurrentDate() {
+      const today = new Date();
+      return `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, "0")}${String(
+        today.getDate()
+      ).padStart(2, "0")}`;
+    },
+    getFutureDate(days) {
+      const today = new Date();
+      today.setDate(today.getDate() + days);
+      return `${today.getFullYear()}${String(today.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}${String(today.getDate()).padStart(2, "0")}`;
+    },
+    toggleAlert() {
+      this.alertEnabled = !this.alertEnabled;
+      alert(this.alertEnabled ? "알림을 받습니다." : "알림을 받지 않습니다.");
+    },
     showPopup(data) {
       if (data) {
-        this.popupData = data; // 데이터를 popupData에 할당하여 팝업에 표시
+        this.popupData = data;
       }
     },
     showReportOptions(type) {
@@ -140,6 +336,7 @@ export default {
           if (this.fileAttached) {
             this.addReport({ type });
             Swal.fire('신고 완료', `${type}이(가) 승인되면 리워드가 적립됩니다.`, 'success');
+            this.popupData = false;
           } else {
             Swal.fire('사진 첨부 필요', '제품을 촬영해주세요!', 'warning');
           }
@@ -151,7 +348,8 @@ export default {
       this.currentAdIndex = (this.currentAdIndex + 1) % this.adImages.length;
     },
     previousSlide() {
-      this.currentAdIndex = (this.currentAdIndex - 1 + this.adImages.length) % this.adImages.length;
+      this.currentAdIndex =
+        (this.currentAdIndex - 1 + this.adImages.length) % this.adImages.length;
     },
     onTouchStart(event) {
       this.touchStartX = event.touches[0].clientX;
@@ -186,12 +384,80 @@ export default {
         }
         this.isDragging = false;
       }
-    }
+    },
+    goToShop() {
+      this.$router.push("/shoppage");
+    },
+    changeProfileImage(event) {
+      const file = event.target.files[0]; // 파일 입력값 가져오기
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.userInfo.image = e.target.result; // 이미지 미리보기
+          localStorage.setItem("profileImage", e.target.result); // LocalStorage에 저장
+        };
+        reader.readAsDataURL(file); // 파일을 Data URL로 읽기
+      }
+    },
+  },
+  mounted() {
+    this.fetchWeather();
+    this.fetchUserInfo();
   },
 };
 </script>
 
-<style lang="scss" scoped>
+
+<style scoped>
+.weather-box {
+  width: 92%;
+  max-width: 500px;
+  height: 15px;
+  margin: 20px 0;
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.weather-info {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.today-weather h3,
+.rain-forecast h3 {
+  font-size: 14px;
+  color: #132f64;
+  margin: 0;
+}
+
+.today-weather p,
+.rain-forecast p {
+  font-size: 12px;
+  color: #777777;
+}
+
+.alert-button {
+  padding: 4px 8px;
+  background-color: #132f64;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.alert-button:hover {
+  background-color: #004a75;
+}
 /* 광고 슬라이드 스타일 */
 .ad-slider {
   width: 100%;
@@ -246,7 +512,6 @@ export default {
   padding: 20px 0;
 }
 
-
 .bar.active {
   background-color: rgba(0, 0, 0, 0.2);
 }
@@ -258,7 +523,6 @@ export default {
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* 나머지 스타일 */
 .marker {
   position: relative;
   width: 25px;
@@ -307,7 +571,6 @@ export default {
   left: 50%;
   transform: translateX(-50%);
   background-color: #ffffff;
-  border: 2px solid #132f64;
   border-radius: 8px;
   padding: 15px;
   width: 250px;
@@ -331,11 +594,14 @@ export default {
 }
 
 .close-button {
-  align-self: flex-end;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 24px;
+  cursor: pointer;
   background: none;
   border: none;
-  font-size: 14px;
-  cursor: pointer;
+  color: #132f64;
 }
 
 .action-buttons {
@@ -346,13 +612,12 @@ export default {
 
 .action-button {
   padding: 5px 10px;
-  background-color: #132f64;
-  color: #ffffff;
-  border: none;
-  border-radius: 4px;
+  background-color: #ffffff;
+  color: #132f64;
+  border: 2px solid #132f64;
+  border-radius: 8px;
   cursor: pointer;
 }
-
 
 .report-text {
   width: 100%;
@@ -429,4 +694,68 @@ export default {
   cursor: pointer;
   transition: background-color 0.3s;
 }
+
+.profile-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  padding: 15px;
+  max-width: 400px;
+  margin: auto;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.profile-img-label {
+  cursor: pointer;
+}
+
+.profile-img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+  border: 2px solid #f0f0f0;
+}
+
+.profile-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+.profile-status {
+  font-size: 14px;
+  color: #777;
+  margin: 5px 0 0;
+}
+
+.shop-button {
+  padding: 4px 8px;
+  background-color: #132f64;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-left: 30px; /* 이름/상태와 버튼 사이 간격 조정 */
+}
+
+.shop-button:hover {
+  background-color: #004a75;
+}
 </style>
+
